@@ -17,36 +17,40 @@ import il.technion.ewolf.kbr.openkad.KadNetModule;
 
 public class PC extends Node implements Runnable
 {
-	public Kademlia mediator;
 	public boolean isNIRF;
 	public String libnames;
 	public int id; //後でKeyに変更
 	public Map<Integer,ArrayList<PC>> kBuckets; //Keyの文字列(toBinaryString)とPCのリスト
 	public Map<String,ArrayList<PC>> dht; //ライブラリ,PCたち
 	public BigInteger[] twoPows; //160
+	public KademliaView view;
+	public KademliaModel model;
 
 	/*
 	 * コンストラクタ
 	 */
-	public PC(Kademlia mediator, String libnames, Key aKey, int id)
+	public PC(KademliaModel aModel,
+			KademliaView aView,
+			String libnames, Key aKey, int id)
 	{
 		super(aKey);
-		this.mediator = mediator;
+		this.model = aModel;
+		this.view = aView;
 		this.isNIRF = false;
 		this.libnames = libnames;
 		this.kBuckets = new TreeMap<Integer,ArrayList<PC>>(); //Keyの文字列(toBinaryString)とPCのリスト
 
 		this.dht = new TreeMap<String,ArrayList<PC>>(); //ライブラリ,PCのたち
-		this.twoPows = new BigInteger[this.mediator.kBucketsLen+1]; //160
-		for(int i=0; i < this.mediator.kBucketsLen+1; i++) { this.twoPows[i]=Constants.TWO.pow(i); }
+		this.twoPows = new BigInteger[this.model.kBucketsLen+1]; //160
+		for(int i=0; i < this.model.kBucketsLen+1; i++) { this.twoPows[i]=Constants.TWO.pow(i); }
 		this.id = id;
 	}
-	
+
 	public boolean ping() { return this.isNIRF; }
 
 	public void showKBucket()
 	{
-		PC aPC = this.mediator.pcs[this.id]; //自身のオブジェクト
+		PC aPC = this.model.pcs[this.id]; //自身のオブジェクト
 		//System.out.println("table id = " + aPC.getKey().getInt());
 		System.out.print(Constants.GREEN);
 		System.out.println("tableId=" + aPC.id);
@@ -73,10 +77,10 @@ public class PC extends Node implements Runnable
 
 		//距離を求める
 		int distance = -1;
-		for(int i=0; i < this.mediator.kBucketsLen; i++)
+		for(int i=0; i < this.model.kBucketsLen; i++)
 		{
 			BigInteger distanceXor = distanceXorKey.getInt();
-			distanceXor = distanceXor.add(this.mediator.pcLen.divide(Constants.TWO)); // 2^X + (2^X)/2
+			distanceXor = distanceXor.add(this.model.pcLen.divide(Constants.TWO)); // 2^X + (2^X)/2
 			if (this.twoPows[i] == null) { continue; }
 
 			//twoPows[i] <= distance && distance < twoPows[i]
@@ -149,15 +153,23 @@ public class PC extends Node implements Runnable
 	 */
 	public PC pingBroadcast()
 	{
-		List<PC> randomPCs = Arrays.asList(Arrays.copyOf(this.mediator.pcs, this.mediator.pcs.length)); 
+		List<PC> randomPCs = Arrays.asList(Arrays.copyOf(this.model.pcs, this.model.pcs.length)); 
 		Collections.shuffle(randomPCs);
 
 		for (PC aPC : randomPCs) {
-			if (aPC == this.mediator.pcs[this.id]) { continue; }
+			if (aPC == this.model.pcs[this.id]) { continue; }
 			if (aPC.ping()) {
 				//第一引数のPCから第二引数のPCに転送
-				this.addToKBuckets(aPC,this.mediator.pcs[this.id]); 
-				this.addToKBuckets(this.mediator.pcs[this.id],aPC);
+				this.addToKBuckets(aPC,this.model.pcs[this.id]); 
+				this.addToKBuckets(this.model.pcs[this.id],aPC);
+
+				/*
+				this.view.setMessageKind(Constants.PING_MSG);
+				this.view.addLineOfmessage(aPC,this.model.pcs[this.id]);
+				this.model.update();
+				this.sleeping(Constants.SLEEP_TIME); //SLEEP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				*/
+
 				//aPC.store(this, this.getKey(), this.libnames); //DHTを登録する
 				return aPC;
 			}
@@ -230,9 +242,14 @@ public class PC extends Node implements Runnable
 
 		//K個のノードを経路表に追加
 		for(PC aPC : pcK) {
+			this.view.addLineOfmessage(fromPC,aPC);
 			this.addToKBuckets(fromPC, aPC);
 			this.addToKBuckets(aPC,fromPC);
 		}
+		this.view.setMessageKind(Constants.FIND_NODE_MSG);
+		this.model.update();
+		this.sleeping(Constants.SLEEP_TIME + 1000); //SLEEP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
 	}
 
 	/*
@@ -242,15 +259,20 @@ public class PC extends Node implements Runnable
 	{
 		while(true)
 		{
-			PC fromPC = this.mediator.pcs[this.id];
+			this.model.update();
+			PC fromPC = this.model.pcs[this.id];
 			PC toPC = this.pingBroadcast(); //NIRFネットに接続
 			 //ノードの一覧とstoreしてくれ情報を返す
 			if (toPC != null) { this.findNode(fromPC, toPC); }
-			this.showKBucket();
-
-			try { Thread.sleep(1400); }
-			catch(Exception e) { e.printStackTrace(); }
+			//this.showKBucket();
+			//sleeping(Constants.SLEEP_TIME);
 		}
+	}
+
+	public void sleeping(int time)
+	{
+		try { Thread.sleep(time); }
+		catch(Exception e) { e.printStackTrace(); }
 	}
 
 
