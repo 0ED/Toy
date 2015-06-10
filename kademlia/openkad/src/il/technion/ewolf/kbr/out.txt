@@ -1,0 +1,120 @@
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/KadNet.java
+55:	private final Provider<PingHandler> pingHandler;
+83:			Provider<PingHandler> pingHandler,
+107:		this.pingHandler = pingHandler;
+129:		pingHandler.get().register();
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/KadNetModule.java
+96:		// sending back pings
+97:		defaultProps.setProperty("openkad.executors.ping.nrthreads", "1");
+98:		defaultProps.setProperty("openkad.executors.ping.max_pending", "16");
+103:		// minimum time between successive pings
+224:			@Named("openkad.executors.ping") final ExecutorService pingExecutor, final Provider<PingRequest> pingRequestProvider,
+226:		return new StableBucket(maxSize, validTimespan, pingExecutor, pingRequestProvider, msgDispatcherProvider);
+274:	@Named("openkad.executors.ping")
+276:	ExecutorService providePingExecutor(@Named("openkad.executors.ping.nrthreads") final int nrThreads,
+277:			@Named("openkad.executors.ping.max_pending") final int maxPending) {
+451:		// counts the number of incoming pings
+454:		// counts the number of outgoing pings
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/KadNode.java
+13: * 2. being ping - expecting a ping to be received from this node
+54:	 * Signals this node is being pinged.
+56:	 * to be pinged in the future
+57:	 * @return true if the node was not being pinged, false if it was already locked
+64:	 * Signals this node is no longer being pinged
+114:	 * Explicitly sets the last time a message was received from the wrapping node
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/bucket/StableBucket.java
+27: * 3. if the node is not in the bucket and the bucket is full, ping the first node in the bucket:
+28: *  a. if it returned a ping, move it to be the last in bucket and don't insert the given node
+29: *  b. if it did not returned a ping, remove it from the bucket and insert the given node as last
+42:	private final Provider<PingRequest> pingRequestProvider;
+44:	private final ExecutorService pingExecutor;
+50:			@Named("openkad.executors.ping") ExecutorService pingExecutor,
+51:			Provider<PingRequest> pingRequestProvider,
+57:		this.pingExecutor = pingExecutor;
+58:		this.pingRequestProvider = pingRequestProvider;
+86:			// check the first node, ping him if no one else is currently pinging
+97:			// ping is still valid, don't replace
+101:			// send ping and act accordingly
+110:		final PingRequest pingRequest = pingRequestProvider.get();
+114:				.addFilter(new IdMessageFilter(pingRequest.getId()))
+119:						// ping was recved
+130:						// ping was not recved
+137:								// did not answer my ping
+155:			pingExecutor.execute(new Runnable() {
+159:					dispatcher.send(inBucket.getNode(), pingRequest);
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/handlers/PingHandler.java
+22: * Handles ping requests by sending back a ping response
+47:		PingResponse pingResponse = ((PingRequest)msg).generateResponse(localNode);
+50:			kadServer.send(msg.getSrc(), pingResponse);
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/msg/PingRequest.java
+9: * A ping request as defined in the kademlia protocol 
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/msg/PingResponse.java
+8: * A ping response as defined in the kademlia protocol
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/openkad/op/JoinOperation.java
+37:	private final Provider<PingRequest> pingRequestProvider;
+50:			Provider<PingRequest> pingRequestProvider,
+63:		this.pingRequestProvider = pingRequestProvider;
+117:			PingRequest pingRequest = pingRequestProvider.get();
+119:				.addFilter(new IdMessageFilter(pingRequest.getId()))
+123:				.send(n, pingRequest);
+
+/Users/tasuku/trunk/openkad/src/il/technion/ewolf/kbr/out
+2:55:	private final Provider<PingHandler> pingHandler;
+3:83:			Provider<PingHandler> pingHandler,
+4:107:		this.pingHandler = pingHandler;
+5:129:		pingHandler.get().register();
+8:96:		// sending back pings
+9:97:		defaultProps.setProperty("openkad.executors.ping.nrthreads", "1");
+10:98:		defaultProps.setProperty("openkad.executors.ping.max_pending", "16");
+11:103:		// minimum time between successive pings
+12:224:			@Named("openkad.executors.ping") final ExecutorService pingExecutor, final Provider<PingRequest> pingRequestProvider,
+13:226:		return new StableBucket(maxSize, validTimespan, pingExecutor, pingRequestProvider, msgDispatcherProvider);
+14:274:	@Named("openkad.executors.ping")
+15:276:	ExecutorService providePingExecutor(@Named("openkad.executors.ping.nrthreads") final int nrThreads,
+16:277:			@Named("openkad.executors.ping.max_pending") final int maxPending) {
+17:451:		// counts the number of incoming pings
+18:454:		// counts the number of outgoing pings
+21:13: * 2. being ping - expecting a ping to be received from this node
+22:54:	 * Signals this node is being pinged.
+23:56:	 * to be pinged in the future
+24:57:	 * @return true if the node was not being pinged, false if it was already locked
+25:64:	 * Signals this node is no longer being pinged
+26:114:	 * Explicitly sets the last time a message was received from the wrapping node
+29:27: * 3. if the node is not in the bucket and the bucket is full, ping the first node in the bucket:
+30:28: *  a. if it returned a ping, move it to be the last in bucket and don't insert the given node
+31:29: *  b. if it did not returned a ping, remove it from the bucket and insert the given node as last
+32:42:	private final Provider<PingRequest> pingRequestProvider;
+33:44:	private final ExecutorService pingExecutor;
+34:50:			@Named("openkad.executors.ping") ExecutorService pingExecutor,
+35:51:			Provider<PingRequest> pingRequestProvider,
+36:57:		this.pingExecutor = pingExecutor;
+37:58:		this.pingRequestProvider = pingRequestProvider;
+38:86:			// check the first node, ping him if no one else is currently pinging
+39:97:			// ping is still valid, don't replace
+40:101:			// send ping and act accordingly
+41:110:		final PingRequest pingRequest = pingRequestProvider.get();
+42:114:				.addFilter(new IdMessageFilter(pingRequest.getId()))
+43:119:						// ping was recved
+44:130:						// ping was not recved
+45:137:								// did not answer my ping
+46:155:			pingExecutor.execute(new Runnable() {
+47:159:					dispatcher.send(inBucket.getNode(), pingRequest);
+50:22: * Handles ping requests by sending back a ping response
+51:47:		PingResponse pingResponse = ((PingRequest)msg).generateResponse(localNode);
+52:50:			kadServer.send(msg.getSrc(), pingResponse);
+55:9: * A ping request as defined in the kademlia protocol 
+58:8: * A ping response as defined in the kademlia protocol
+61:37:	private final Provider<PingRequest> pingRequestProvider;
+62:50:			Provider<PingRequest> pingRequestProvider,
+63:63:		this.pingRequestProvider = pingRequestProvider;
+64:117:			PingRequest pingRequest = pingRequestProvider.get();
+65:119:				.addFilter(new IdMessageFilter(pingRequest.getId()))
+66:123:				.send(n, pingRequest);
+
