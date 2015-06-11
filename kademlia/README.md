@@ -1,4 +1,5 @@
 Kademlia
 ===
 
-Kademlia is p2p network.
+It's DHT algorithm in p2p network.
+
