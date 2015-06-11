@@ -26,6 +26,7 @@ public class PC extends Node implements Runnable
 	public KademliaView view;
 	public KademliaModel model;
 
+
 	/*
 	 * コンストラクタ
 	 */
