@@ -52,7 +52,6 @@ public class PC extends Node implements Runnable
 	public void showKBucket()
 	{
 		PC aPC = this.model.pcs[this.id]; //自身のオブジェクト
-		//System.out.println("table id = " + aPC.getKey().getInt());
 		System.out.print(Constants.GREEN);
 		System.out.println("tableId=" + aPC.id);
 		System.out.print(Constants.BLACK);
@@ -157,22 +156,17 @@ public class PC extends Node implements Runnable
 		List<PC> randomPCs = Arrays.asList(Arrays.copyOf(this.model.pcs, this.model.pcs.length)); 
 		Collections.shuffle(randomPCs);
 
-		for (PC aPC : randomPCs) {
-			if (aPC == this.model.pcs[this.id]) { continue; }
-			if (aPC.ping()) {
-				//第一引数のPCから第二引数のPCに転送
-				this.addToKBuckets(aPC,this.model.pcs[this.id]); 
-				this.addToKBuckets(this.model.pcs[this.id],aPC);
-
-				/*
-				this.view.setMessageKind(Constants.PING_MSG);
-				this.view.addLineOfmessage(aPC,this.model.pcs[this.id]);
-				this.model.update();
-				this.sleeping(Constants.SLEEP_TIME); //SLEEP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				*/
+		for (PC toPC : randomPCs) {
+			if (toPC == this.model.pcs[this.id]) { continue; }
+			if (toPC.ping())
+			{
+				PC fromPC = this.model.pcs[this.id];
+				this.addToKBuckets(fromPC, toPC); 
+				this.addToKBuckets(toPC, fromPC);
+				//this.sendMessage(fromPC, toPC, Constants.PING_MSG);
 
 				//aPC.store(this, this.getKey(), this.libnames); //DHTを登録する
-				return aPC;
+				return toPC;
 			}
 		}
 		return null;
@@ -246,11 +240,17 @@ public class PC extends Node implements Runnable
 			this.view.addLineOfmessage(fromPC,aPC);
 			this.addToKBuckets(fromPC, aPC);
 			this.addToKBuckets(aPC,fromPC);
+			this.sendMessage(fromPC, aPC, Constants.FIND_NODE_MSG); //送る!!
 		}
-		this.view.setMessageKind(Constants.FIND_NODE_MSG);
+	}
+
+	public void sendMessage(PC fromPC, PC toPC, int aKind)
+	{
+		this.view.setMessageKind(aKind);
+		this.view.addLineOfmessage(fromPC, toPC);
 		this.model.update();
-		this.sleeping(Constants.SLEEP_TIME + 1000); //SLEEP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		
+		try { Thread.sleep(Constants.SLEEP_TIME); }
+		catch(Exception e) { e.printStackTrace(); }
 	}
 
 	/*
@@ -260,7 +260,7 @@ public class PC extends Node implements Runnable
 	{
 		while(true)
 		{
-			this.model.update();
+			//this.model.update();
 			PC fromPC = this.model.pcs[this.id];
 			PC toPC = this.pingBroadcast(); //NIRFネットに接続
 			 //ノードの一覧とstoreしてくれ情報を返す
@@ -270,11 +270,6 @@ public class PC extends Node implements Runnable
 		}
 	}
 
-	public void sleeping(int time)
-	{
-		try { Thread.sleep(time); }
-		catch(Exception e) { e.printStackTrace(); }
-	}
 
 
 	/*

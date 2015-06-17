@@ -53,7 +53,6 @@ public class KademliaModel
 			int lib_i = new Random().nextInt(libnames.length);
 			String ipString = "10.0.0." + Integer.toString(i); //未使用
 			Key aKey = keys.get(i);
-			System.out.println(aKey.getInt());
 			this.pcs[i] = new PC(this,this.view,libnames[lib_i], aKey, i);
 			//System.out.println(ipString + " " + (aKey.getInt().add(this.pcLen.divide(Constants.TWO))) + " " + aKey.toBinaryString());
 		}

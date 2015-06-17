@@ -17,5 +17,5 @@ public class Constants {
 	public static int STORE_MSG = 2;
 	public static int FIND_VALUE_MSG = 3;
 	public static String[] messages = {"Ping()","FindNode()","Store()","FindValue()"};
-	public static int SLEEP_TIME = 1000;
+	public static int SLEEP_TIME = 1200;
 }

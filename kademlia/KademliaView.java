@@ -47,7 +47,8 @@ public class KademliaView extends JPanel
 
 	public void setMessageKind(int messageKind)
 	{
-		if (Constants.messages.length >= messageKind) { return; }
+		//if (Constants.messages.length >= messageKind) { return; }
+		System.out.println(this.messageString + "!!!!!!!!!!!!");
 		this.messageString = Constants.messages[messageKind];
 	}
 
@@ -91,7 +92,7 @@ public class KademliaView extends JPanel
 		aGraphics2D.setStroke(new BasicStroke(3.5f));
 
 		FontMetrics aFontMetrics = aGraphics2D.getFontMetrics();
-		Rectangle2D aRect = aFontMetrics.getStringBounds("Message", aGraphics2D);
+		Rectangle2D aRect = aFontMetrics.getStringBounds(this.messageString, aGraphics2D);
 		aGraphics2D.setFont(new Font("ＭＳ 明朝", Font.BOLD, 16));
 
 		for(Pair<Integer,Integer> aPair: this.branches)
@@ -106,7 +107,7 @@ public class KademliaView extends JPanel
 			aGraphics2D.fillRect(cx,cy - aFontMetrics.getAscent(),
 					(int)aRect.getWidth(), (int)aRect.getHeight());
 			aGraphics2D.setColor(Color.GRAY);
-			aGraphics2D.drawString("Ping", cx,cy);
+			aGraphics2D.drawString(this.messageString, cx,cy);
 		}
 	}
 
