@@ -12,15 +12,19 @@ import javax.imageio.ImageIO;
 public class RashModel
 {
 	protected RashView view;
-	protected Rectangle boardRect, whiteBoardRect;
+	protected Rectangle boardRect, whiteBoardRect, startButtonRect;
 	protected int interval;
 	protected List<LightCycle> lightCycles;
 	protected Image rashBoardImage;
+	protected boolean isStartMenu, isHoverStartButton, isPlayMusic;
 
 	public RashModel() {
 		this.boardRect = new Rectangle();
 		this.whiteBoardRect = new Rectangle();
+		this.startButtonRect = new Rectangle(); //削減できそう
 		this.lightCycles = new ArrayList<LightCycle>();
+		this.isStartMenu = true;
+		this.isHoverStartButton = this.isPlayMusic = false;
 	}
 
 	public void setView(RashView aView) {
@@ -31,16 +35,20 @@ public class RashModel
 
 	public void prepare() throws IOException
 	{
-		this.rashBoardImage = ImageIO.read(new File("img/RashBoard.png"));
+		this.rashBoardImage = ImageIO.read(new File(Constants.boardFileName));
 		this.boardRect.setSize(this.rashBoardImage.getWidth(this.view), this.rashBoardImage.getWidth(this.view));
 		this.boardRect.setLocation(Constants.WIN_CENTER_WIDTH - this.boardRect.width / 2,
 								Constants.WIN_CENTER_HEIGHT - this.boardRect.height / 2);
 
-		this.rashBoardImage = Toolkit.getDefaultToolkit().getImage("img/RashBoard.png");
+		this.rashBoardImage = Toolkit.getDefaultToolkit().getImage(Constants.boardFileName);
 		int offsetWidth = 32; //画像の黄色の部分のoffset
 		int offsetHeight = offsetWidth; //画像の黄色の部分のoffset
 		this.whiteBoardRect.setLocation(this.boardRect.x + offsetWidth, this.boardRect.y + offsetHeight);
 		this.whiteBoardRect.setSize(this.boardRect.width - 2*offsetWidth, this.boardRect.height - 2*offsetHeight);
+
+		Image startButtonImage = ImageIO.read(new File(Constants.startButtonBlue));
+		this.startButtonRect.setBounds(Constants.WIN_WIDTH-200, Constants.WIN_HEIGHT-100, startButtonImage.getWidth(this.view), startButtonImage.getHeight(this.view));
+
 		this.interval = this.whiteBoardRect.width / Constants.MAP_SIZE;
 
 		BufferedReader aReader = new BufferedReader(new FileReader(new File(Constants.mapFileName)));

@@ -17,7 +17,7 @@ public class RashView extends javax.swing.JPanel
 		this.setBackground(Color.BLACK);
 	}
 
-	public void paintBasicBoard(Graphics aGraphics)
+	public void paintGameDisplay(Graphics aGraphics)
 	{
 		Graphics2D aGraphics2D = (Graphics2D) aGraphics;
 		aGraphics.drawImage(this.model.rashBoardImage,
@@ -33,10 +33,7 @@ public class RashView extends javax.swing.JPanel
 			aGraphics2D.drawLine(whiteRect.x + i*this.model.interval,	whiteRect.y,
 					whiteRect.x + i*this.model.interval, whiteRect.y + whiteRect.height);
 		}
-	}
 
-	public void paintLightCycle(Graphics aGraphics)
-	{
 		for(LightCycle aCycle : this.model.lightCycles) {
 			String cyclePath = "img/lightCycles/" + aCycle.color + "_" + aCycle.angle + ".png";
 			Image aLightCycleImage = Toolkit.getDefaultToolkit().getImage(cyclePath);
@@ -45,8 +42,20 @@ public class RashView extends javax.swing.JPanel
 		}
 	}
 
+	public void paintMenuDisplay(Graphics aGraphics)
+	{
+		Image menuImage = Toolkit.getDefaultToolkit().getImage(Constants.menuFileName);
+		aGraphics.drawImage(menuImage,0,0, Constants.WIN_WIDTH, Constants.WIN_HEIGHT, this);
+
+		Image startImage = null;
+		if (this.model.isHoverStartButton) startImage = Toolkit.getDefaultToolkit().getImage(Constants.startButtonRed);
+		else startImage = Toolkit.getDefaultToolkit().getImage(Constants.startButtonBlue);
+
+		aGraphics.drawImage(startImage, this.model.startButtonRect.x, this.model.startButtonRect.y, this.model.startButtonRect.width, this.model.startButtonRect.height, this);
+	}
+
 	public void paintComponent(Graphics aGraphics) {
-		this.paintBasicBoard(aGraphics);
-		this.paintLightCycle(aGraphics);
+		if (this.model.isStartMenu) this.paintMenuDisplay(aGraphics);
+		else this.paintGameDisplay(aGraphics);
 	}
 }

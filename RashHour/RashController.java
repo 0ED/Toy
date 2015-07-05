@@ -9,20 +9,51 @@ public class RashController extends MouseAdapter
 	public RashView view;
 	public LightCycle movingCycle;
 	public Point backPoint;
+	public MidiPlayer midiPlayer;
 
     public RashController(RashModel aModel, RashView aView) {
 		this.model = aModel;
 		this.view = aView;
+		this.midiPlayer = new MidiPlayer(Constants.menuMusic);
+		this.midiPlayer.start();
 		this.movingCycle = null; this.backPoint = null;
 		this.view.addMouseListener(this);
 		this.view.addMouseMotionListener(this);
     }
 
 	public void mousePressed(MouseEvent anEvent) {
-		for (LightCycle aCycle : this.model.lightCycles) {
-			if (aCycle.rect.contains(anEvent.getPoint())) this.movingCycle = aCycle;
+		if (this.model.isStartMenu) {
+			if (this.model.startButtonRect.contains(anEvent.getPoint())) {
+				this.model.isStartMenu = false;
+				this.midiPlayer.stop();
+				this.view.repaint();
+				this.midiPlayer = new MidiPlayer(Constants.menuMusic);
+				this.midiPlayer.start();
+			}
 		}
-		this.backPoint = anEvent.getPoint();
+		else {
+			for (LightCycle aCycle : this.model.lightCycles) {
+				if (aCycle.rect.contains(anEvent.getPoint())) this.movingCycle = aCycle;
+			}
+			this.backPoint = anEvent.getPoint();
+		}
+	}
+
+	public void mouseMoved(MouseEvent anEvent) {
+		if (this.model.isStartMenu) {
+			if (this.model.startButtonRect.contains(anEvent.getPoint())) {
+				if (! this.model.isHoverStartButton) {
+					this.model.isHoverStartButton = true;
+					this.view.repaint();
+				}
+			}
+			else {
+				if (this.model.isHoverStartButton) {
+					this.model.isHoverStartButton = false;
+					this.view.repaint();
+				}
+			}
+		}
 	}
 
 	public void mouseDragged(MouseEvent anEvent)
