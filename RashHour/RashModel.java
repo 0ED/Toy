@@ -17,7 +17,7 @@ public class RashModel
 	protected List<LightCycle> lightCycles;
 	protected Image rashBoardImage;
 	protected boolean isStartMenu, isHoverStartButton, isPlayMusic;
-	private int stageNumber;
+	protected int stageNumber;
 
 	public RashModel() {
 		this.boardRect = new Rectangle();

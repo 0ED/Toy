@@ -98,6 +98,12 @@ public class RashController extends MouseAdapter
 			catch(IOException anException) {
 				JOptionPane.showMessageDialog(null, "Exit game!", "You win!!",JOptionPane.PLAIN_MESSAGE);
 				this.model.isStartMenu = true;
+				this.model.stageNumber = 0;
+				try { this.model.nextStage(); }
+				catch(IOException e) { }
+				this.midiPlayer.stop();
+				this.midiPlayer = new MidiPlayer(Constants.menuMusic);
+				this.midiPlayer.start();
 			}
 			this.view.repaint();
 		}
