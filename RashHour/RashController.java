@@ -1,7 +1,9 @@
+import java.io.IOException;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
+import javax.swing.JOptionPane;
 
 public class RashController extends MouseAdapter
 {
@@ -27,7 +29,7 @@ public class RashController extends MouseAdapter
 				this.model.isStartMenu = false;
 				this.midiPlayer.stop();
 				this.view.repaint();
-				this.midiPlayer = new MidiPlayer(Constants.menuMusic);
+				this.midiPlayer = new MidiPlayer(Constants.gameMusic);
 				this.midiPlayer.start();
 			}
 		}
@@ -59,26 +61,47 @@ public class RashController extends MouseAdapter
 	public void mouseDragged(MouseEvent anEvent)
 	{
 		if (this.movingCycle == null) { return; }
-		int offsetX=0, offsetY=0;
-		if (this.movingCycle.angle % 2 == 0) { offsetY = anEvent.getPoint().y - this.backPoint.y; } //縦
-		else { offsetX = anEvent.getPoint().x - this.backPoint.x; } //横
+		Rectangle movedRect = this.getOffsetRect(anEvent.getPoint());
 
-		Rectangle movingRect = new Rectangle(this.movingCycle.rect);
-		movingRect.translate(offsetX,offsetY);
-		if (! this.model.whiteBoardRect.contains(movingRect)) { return; }
+		if (this.model.goalRect.intersects(movedRect)) {
+		}
+		else {
+			if (! this.model.whiteBoardRect.contains(movedRect)) { return; }
+		}
 
 		for (LightCycle aCycle : this.model.lightCycles) {
 			if (aCycle == this.movingCycle) { continue; }
-			if (movingRect.intersects(aCycle.rect)) { return; }
+			if (movedRect.intersects(aCycle.rect)) { return; }
 		}
-		this.movingCycle.rect = movingRect;
+		this.movingCycle.rect = movedRect;
 		this.view.repaint();
 		this.backPoint = anEvent.getPoint();
+	}
+
+	private Rectangle getOffsetRect(Point aPoint) {
+		int offsetX=0, offsetY=0;
+		if (this.movingCycle.angle % 2 == 0) { offsetY = aPoint.y - this.backPoint.y; } //縦
+		else { offsetX = aPoint.x - this.backPoint.x; } //横
+		Rectangle movedRect = new Rectangle(this.movingCycle.rect);
+		movedRect.translate(offsetX,offsetY);
+
+		return movedRect;
 	}
 
 	public void mouseReleased(MouseEvent anEvent)
 	{
 		if (this.movingCycle == null) { return; }
+		Rectangle movedRect = this.getOffsetRect(anEvent.getPoint());
+		if (this.model.goalRect.contains(movedRect) || this.model.goalRect.intersects(movedRect)) { //Goal
+			JOptionPane.showMessageDialog(null, "Next stage ?", "Goal!!",JOptionPane.PLAIN_MESSAGE);
+			try { this.model.nextStage(); }
+			catch(IOException anException) {
+				JOptionPane.showMessageDialog(null, "Exit game!", "You win!!",JOptionPane.PLAIN_MESSAGE);
+				this.model.isStartMenu = true;
+			}
+			this.view.repaint();
+		}
+
 		Point aPoint = this.movingCycle.rect.getLocation();
 		Point pp = this.model.whiteBoardRect.getLocation();
 		for(int i = 0; i < Constants.MAP_SIZE; i++)

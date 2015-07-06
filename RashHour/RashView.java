@@ -34,6 +34,10 @@ public class RashView extends javax.swing.JPanel
 					whiteRect.x + i*this.model.interval, whiteRect.y + whiteRect.height);
 		}
 
+		aGraphics.setColor(Color.BLACK);
+		aGraphics.fillRect(this.model.goalRect.x, this.model.goalRect.y,
+						this.model.goalRect.width, this.model.goalRect.height);
+
 		for(LightCycle aCycle : this.model.lightCycles) {
 			String cyclePath = "img/lightCycles/" + aCycle.color + "_" + aCycle.angle + ".png";
 			Image aLightCycleImage = Toolkit.getDefaultToolkit().getImage(cyclePath);
