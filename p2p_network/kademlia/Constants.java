@@ -7,6 +7,8 @@ public class Constants {
 	public static String YELLOW = "\u001b[00;33m";
 	public static String BLUE = "\u001b[00;34m";
 	public static BigInteger TWO = new BigInteger("2");
+	//public static int NODE_NUM = 16;
+	public static int NODE_NUM = 32;
 	public static int K_LEN = 3;
 	public static int NODE_R_MAX = 80; //ノードの半径の最大
 	public static int RING_R = 300;

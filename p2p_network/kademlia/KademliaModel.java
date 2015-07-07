@@ -13,7 +13,6 @@ import il.technion.ewolf.kbr.Key;
 
 public class KademliaModel
 {
-	protected int NODE_NUM = 24;
 	protected String[] libnames;
 	protected PC[] pcs;
 	protected int kBucketsLen;
@@ -24,7 +23,7 @@ public class KademliaModel
 	{
 		this.view = null;
 		this.libnames = new String[]{"A.jar","B.jar","C.jar","D.jar","non"};
-		this.pcs = new PC[NODE_NUM];
+		this.pcs = new PC[Constants.NODE_NUM];
 		this.kBucketsLen = 8*2; //16
 		this.pcLen = Constants.TWO.pow(kBucketsLen);
 	}
@@ -43,7 +42,7 @@ public class KademliaModel
 		catch(Exception e) { e.printStackTrace(); }
 
 		List<Key> keys = new ArrayList<Key>();
-		for(int i=0; i<NODE_NUM; i++)
+		for(int i=0; i<Constants.NODE_NUM; i++)
 		{
 			String ipString = "10.0.0." + Integer.toString(i); //未使用
 			keys.add(aFactory.create(ipString));
@@ -51,7 +50,7 @@ public class KademliaModel
 
 		Collections.sort(keys, new KeyComparator());
 
-		for(int i=0; i<NODE_NUM; i++)
+		for(int i=0; i<Constants.NODE_NUM; i++)
 		{
 			int lib_i = new Random().nextInt(libnames.length);
 			String ipString = "10.0.0." + Integer.toString(i); //未使用
@@ -65,7 +64,7 @@ public class KademliaModel
 	public void run()
 	{
 		//スタート
-		for(int i=0; i<NODE_NUM; i++) {
+		for(int i=0; i<Constants.NODE_NUM; i++) {
 			System.out.print(Constants.RED);
 			System.out.println("Joined Node " + i);
 			System.out.print(Constants.BLACK);
@@ -85,7 +84,7 @@ public class KademliaModel
 	 */
 	public void setAllRouting()
 	{
-		for(int i=0; i<NODE_NUM; i++)
+		for(int i=0; i<Constants.NODE_NUM; i++)
 		{
 			PC fromPC = this.pcs[i]; //自身のオブジェクト
 			for(Map.Entry<Integer,ArrayList<PC>> anEntry : fromPC.kBuckets.entrySet())
@@ -129,7 +128,7 @@ public class KademliaModel
 	}
 
 	public void showKBucketAll() {
-		for(int i=0; i<NODE_NUM; i++) {
+		for(int i=0; i<Constants.NODE_NUM; i++) {
 			if (this.pcs[i].isNIRF) {
 				this.showKBucket(i);
 			}

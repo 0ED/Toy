@@ -65,12 +65,12 @@ public class KademliaView extends JPanel
 		int height = this.getHeight();
 		int center_x = width / 2;
 		int center_y = height / 2;
-		double d_angle = 360.0d / this.model.NODE_NUM;
+		double d_angle = 360.0d / Constants.NODE_NUM;
 		double ringCircumference = 2 * Math.PI * Constants.RING_R;
-		nodeR = (int)((ringCircumference / this.model.NODE_NUM) / 2);
+		nodeR = (int)((ringCircumference / Constants.NODE_NUM) / 2);
 		if (nodeR > Constants.NODE_R_MAX) { nodeR = Constants.NODE_R_MAX; }
 
-		for(int i=0; i<this.model.NODE_NUM; i++)
+		for(int i=0; i<Constants.NODE_NUM; i++)
 		{
 			double aRadian = Math.toRadians(d_angle * i);
 			int x = center_x + (int)(Constants.RING_R * Math.cos(aRadian));
@@ -118,7 +118,7 @@ public class KademliaView extends JPanel
 		Graphics2D aGraphics2D = (Graphics2D)aGraphics;
 		aGraphics2D.setStroke(new BasicStroke(3.5f));
 
-		for(int i=0; i<this.model.NODE_NUM; i++)
+		for(int i=0; i<Constants.NODE_NUM; i++)
 		{
 			Point aPoint = this.points.get(i);
 			int x = aPoint.x - nodeR/2;
