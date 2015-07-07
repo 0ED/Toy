@@ -34,7 +34,7 @@ public class KademliaView extends JPanel
 		this.setLocation(0,0);
 		this.setSize(Constants.WIN_WIDTH,Constants.WIN_HEIGHT);
 		this.setBackground(Color.WHITE);
-		
+
 		//スタートボタン
 		startButton = new JButton("Start");
 		startButton.setLocation(10,10);
@@ -47,8 +47,7 @@ public class KademliaView extends JPanel
 
 	public void setMessageKind(int messageKind)
 	{
-		//if (Constants.messages.length >= messageKind) { return; }
-		System.out.println(this.messageString + "!!!!!!!!!!!!");
+		//if (Constants.messages.length <= messageKind) { return; }
 		this.messageString = Constants.messages[messageKind];
 	}
 
@@ -66,8 +65,6 @@ public class KademliaView extends JPanel
 		int height = this.getHeight();
 		int center_x = width / 2;
 		int center_y = height / 2;
-		System.out.println(center_x);
-		System.out.println(center_y);
 		double d_angle = 360.0d / this.model.NODE_NUM;
 		double ringCircumference = 2 * Math.PI * Constants.RING_R;
 		nodeR = (int)((ringCircumference / this.model.NODE_NUM) / 2);
@@ -88,7 +85,8 @@ public class KademliaView extends JPanel
 	public void paintBranches(Graphics aGraphics)
 	{
 		Graphics2D aGraphics2D = (Graphics2D) aGraphics;
-		aGraphics2D.setColor(Color.GRAY);
+		if (this.messageString.equals("")) aGraphics2D.setColor(Color.GREEN);
+		else aGraphics2D.setColor(Color.GRAY);
 		aGraphics2D.setStroke(new BasicStroke(3.5f));
 
 		FontMetrics aFontMetrics = aGraphics2D.getFontMetrics();
@@ -106,7 +104,8 @@ public class KademliaView extends JPanel
 			aGraphics2D.setColor(Color.WHITE);
 			aGraphics2D.fillRect(cx,cy - aFontMetrics.getAscent(),
 					(int)aRect.getWidth(), (int)aRect.getHeight());
-			aGraphics2D.setColor(Color.GRAY);
+			if (this.messageString.equals("")) aGraphics2D.setColor(Color.GREEN);
+			else aGraphics2D.setColor(Color.GRAY);
 			aGraphics2D.drawString(this.messageString, cx,cy);
 		}
 	}
@@ -118,7 +117,7 @@ public class KademliaView extends JPanel
 	{
 		Graphics2D aGraphics2D = (Graphics2D)aGraphics;
 		aGraphics2D.setStroke(new BasicStroke(3.5f));
-		
+
 		for(int i=0; i<this.model.NODE_NUM; i++)
 		{
 			Point aPoint = this.points.get(i);
@@ -149,5 +148,5 @@ public class KademliaView extends JPanel
 		this.paintNodes(aGraphics);
 		branches.clear(); //すべて削除
 	}
-	
+
 }

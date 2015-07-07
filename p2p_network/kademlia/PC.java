@@ -1,9 +1,9 @@
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.math.BigInteger;
@@ -49,25 +49,6 @@ public class PC extends Node implements Runnable
 
 	public boolean ping() { return this.isNIRF; }
 
-	public void showKBucket()
-	{
-		PC aPC = this.model.pcs[this.id]; //自身のオブジェクト
-		System.out.print(Constants.GREEN);
-		System.out.println("tableId=" + aPC.id);
-		System.out.print(Constants.BLACK);
-
-		for(Map.Entry<Integer,ArrayList<PC>> anEntry : aPC.kBuckets.entrySet()) {
-			int key = anEntry.getKey();
-			ArrayList<PC> values = anEntry.getValue();
-			System.out.print("k=" + key + ", v=");
-			for(PC value : values) { System.out.print(value.id + ","); }
-			System.out.println();
-		}
-		System.out.print(Constants.GREEN);
-		System.out.println("----");
-		System.out.print(Constants.BLACK);
-	}
-
 	/*
 	 * Key同士の
 	 */
@@ -92,7 +73,7 @@ public class PC extends Node implements Runnable
 	}
 
 	/*
-	 * fromPCからtoPCに向けてメッセージ
+	 * fromPCからtoPCに向けてメッセージを送り, toPCのkBucketsにfromPCを登録する
 	 * KBucketsにaPCを追加
 	 */
 	public void addToKBuckets(PC fromPC, PC toPC)
@@ -109,7 +90,7 @@ public class PC extends Node implements Runnable
 				{
 					PC beginPC = aKBucket.get(0);
 					if (beginPC.ping())
-					{	
+					{
 						beginPC = aKBucket.remove(0); //先頭ノードを後方ノードに移動
 						aKBucket.add(beginPC);
 					}
@@ -153,7 +134,7 @@ public class PC extends Node implements Runnable
 	 */
 	public PC pingBroadcast()
 	{
-		List<PC> randomPCs = Arrays.asList(Arrays.copyOf(this.model.pcs, this.model.pcs.length)); 
+		List<PC> randomPCs = Arrays.asList(Arrays.copyOf(this.model.pcs, this.model.pcs.length));
 		Collections.shuffle(randomPCs);
 
 		for (PC toPC : randomPCs) {
@@ -161,9 +142,10 @@ public class PC extends Node implements Runnable
 			if (toPC.ping())
 			{
 				PC fromPC = this.model.pcs[this.id];
-				this.addToKBuckets(fromPC, toPC); 
+				this.addToKBuckets(fromPC, toPC);
 				this.addToKBuckets(toPC, fromPC);
-				//this.sendMessage(fromPC, toPC, Constants.PING_MSG);
+				this.model.sendMessage(fromPC, toPC, Constants.PING_MSG);
+				this.model.updateAndSleep();
 
 				//aPC.store(this, this.getKey(), this.libnames); //DHTを登録する
 				return toPC;
@@ -174,36 +156,40 @@ public class PC extends Node implements Runnable
 
 
 	/*
-	 * 
+	 *
 	 * @param 参照したい経路表を持つノード
 	 * @param K個のノードを補完する場所
 	 * @param 距離
 	 */
-	public void addKNode(PC aPC, List<PC> pcK, int distance, boolean[] isVisit)
+	public List<PC> getKNode(PC aPC, List<PC> pcK, int distance, boolean[] isVisit)
 	{
-		if (isVisit[distance]) { return; }
+		if (isVisit[distance]) { return pcK; }
 
 		if (aPC.kBuckets.containsKey(distance))
 		{
-			List<PC> aKBucket = aPC.kBuckets.get(distance);
-			if (pcK.size() > Constants.K_LEN) { return; }
+			List<PC> aKBucket = new ArrayList(aPC.kBuckets.get(distance));
+			if (pcK.size() > Constants.K_LEN) { return pcK; }
 
 			int remainK = Constants.K_LEN - pcK.size();
 			for(int i=0; i<remainK; i++)
 			{
-				if (aKBucket.size() <= i) { break; }
-				pcK.add(aKBucket.get(i));
+				if (aKBucket.isEmpty()) { break; }
+				PC addingPC = aKBucket.remove(0);
+				pcK.add(addingPC);
 			}
 		}
 		isVisit[distance] = true;
+
+		return pcK;
 	}
 
 	/*
 	 * 自身の経路表を元に指定されたKeyに近いノードたち一覧を経路表に追加する。
 	 */
-	public void findNode(PC fromPC, PC toPC)
+	public List<PC> findNode(PC fromPC, PC toPC)
 	{
 		int distance = this.getDistance(fromPC.getKey(), toPC.getKey()); //0~160
+		//System.out.println(distance);
 
 		//K個のノードを選択する
 		int afterDistance = distance;
@@ -216,11 +202,11 @@ public class PC extends Node implements Runnable
 			}
 			if (afterDistance == beforeDistance) {
 				//K個に収まる分だけpcKに追加
-				this.addKNode(toPC,pcK,distance, isVisit); //toPCのテーブルにK個収まる分だけ, pcKに追加する
+				pcK = this.getKNode(toPC,pcK,distance, isVisit); //toPCのテーブルにK個収まる分だけ, pcKに追加する
 			}
 			else {
-				this.addKNode(toPC,pcK,beforeDistance,isVisit); //toPCのテーブルにK個収まる分だけ, pcKに追加する
-				this.addKNode(toPC,pcK,afterDistance,isVisit); //toPCのテーブルにK個収まる分だけ, pcKに追加する
+				pcK = this.getKNode(toPC,pcK,beforeDistance,isVisit); //toPCのテーブルにK個収まる分だけ, pcKに追加する
+				pcK = this.getKNode(toPC,pcK,afterDistance,isVisit); //toPCのテーブルにK個収まる分だけ, pcKに追加する
 			}
 
 			if ((beforeDistance-1) < 0) { beforeDistance=(160-1); }
@@ -228,29 +214,10 @@ public class PC extends Node implements Runnable
 			afterDistance = (afterDistance+1) % 160;
 		}
 
-		/*
-		System.out.print(Constants.YELLOW);
-		System.out.print("K selected nodes: ");
-		for(PC aPC : pcK) { System.out.print(aPC.id + " "); }
-		System.out.println(Constants.BLACK);
-		*/
+		this.addToKBuckets(toPC, fromPC); //toPCのテーブルにfromPCを追加
+		this.model.sendMessage(fromPC, toPC, Constants.FIND_NODE_MSG); //色付け
 
-		//K個のノードを経路表に追加
-		for(PC aPC : pcK) {
-			this.view.addLineOfmessage(fromPC,aPC);
-			this.addToKBuckets(fromPC, aPC);
-			this.addToKBuckets(aPC,fromPC);
-			this.sendMessage(fromPC, aPC, Constants.FIND_NODE_MSG); //送る!!
-		}
-	}
-
-	public void sendMessage(PC fromPC, PC toPC, int aKind)
-	{
-		this.view.setMessageKind(aKind);
-		this.view.addLineOfmessage(fromPC, toPC);
-		this.model.update();
-		try { Thread.sleep(Constants.SLEEP_TIME); }
-		catch(Exception e) { e.printStackTrace(); }
+		return pcK;
 	}
 
 	/*
@@ -258,18 +225,35 @@ public class PC extends Node implements Runnable
 	 */
 	public void run()
 	{
-		while(true)
-		{
-			//this.model.update();
-			PC fromPC = this.model.pcs[this.id];
-			PC toPC = this.pingBroadcast(); //NIRFネットに接続
-			 //ノードの一覧とstoreしてくれ情報を返す
-			if (toPC != null) { this.findNode(fromPC, toPC); }
-			//this.showKBucket();
-			//sleeping(Constants.SLEEP_TIME);
-		}
-	}
+		boolean isFirst = true;
+		PC fromPC = this.model.pcs[this.id];
+		PC toPC = null;
 
+		//Whileで回すのが基本
+		if (isFirst) {
+			toPC = this.pingBroadcast();
+			isFirst = false;
+		}
+
+		 //pingが返ってきたなら,ノードの一覧とstoreしてくれ情報を返す
+		if (toPC != null) {
+			//System.out.println(this.id + " -> " + toPC.id);
+			List<PC> pcK = this.findNode(fromPC, toPC);
+			this.model.updateAndSleep();
+
+			//K個のノードを経路表に追加
+			for(PC aPC : pcK) {
+				if (aPC == fromPC) { continue; } //送り先のPCとKBucketsのPCがかぶる時追加しない
+				this.findNode(fromPC, aPC); //K個のノードにFind
+			}
+			this.model.updateAndSleep();
+		}
+
+		this.model.setAllRouting();
+		this.model.updateAndSleep();
+		//this.model.showKBucketAll();
+		//this.model.showKBucket(this.id);
+	}
 
 
 	/*

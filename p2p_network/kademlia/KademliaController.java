@@ -24,7 +24,7 @@ public class KademliaController implements ActionListener,MouseListener
 		this.view.startButton.addActionListener(this);
 		this.view.addMouseListener(this);
     }
-    
+
     /**
      * @param anEvent クリック情報
      */
@@ -39,10 +39,7 @@ public class KademliaController implements ActionListener,MouseListener
 		}
     }
 
-	public void mouseClicked(MouseEvent anEvent)
-	{
-	}
-
+	public void mouseClicked(MouseEvent anEvent) { }
 	public void mouseEntered(MouseEvent anEvent) {}
 	public void mouseExited(MouseEvent anEvent) {}
 	public void mousePressed(MouseEvent anEvent) {}

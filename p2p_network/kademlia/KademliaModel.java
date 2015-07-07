@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 import java.math.BigInteger;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -11,7 +13,7 @@ import il.technion.ewolf.kbr.Key;
 
 public class KademliaModel
 {
-	protected int NODE_NUM = 18;
+	protected int NODE_NUM = 24;
 	protected String[] libnames;
 	protected PC[] pcs;
 	protected int kBucketsLen;
@@ -46,6 +48,7 @@ public class KademliaModel
 			String ipString = "10.0.0." + Integer.toString(i); //未使用
 			keys.add(aFactory.create(ipString));
 		}
+
 		Collections.sort(keys, new KeyComparator());
 
 		for(int i=0; i<NODE_NUM; i++)
@@ -55,6 +58,7 @@ public class KademliaModel
 			Key aKey = keys.get(i);
 			this.pcs[i] = new PC(this,this.view,libnames[lib_i], aKey, i);
 			//System.out.println(ipString + " " + (aKey.getInt().add(this.pcLen.divide(Constants.TWO))) + " " + aKey.toBinaryString());
+
 		}
 	}
 
@@ -76,10 +80,79 @@ public class KademliaModel
 		}
 	}
 
-	public void update()
-	{ 
+	/*
+	 * すべてのルーティングしたセットする
+	 */
+	public void setAllRouting()
+	{
+		for(int i=0; i<NODE_NUM; i++)
+		{
+			PC fromPC = this.pcs[i]; //自身のオブジェクト
+			for(Map.Entry<Integer,ArrayList<PC>> anEntry : fromPC.kBuckets.entrySet())
+			{
+				ArrayList<PC> toPCs = anEntry.getValue();
+				for(PC toPC : toPCs) {
+					this.sendMessage(fromPC, toPC, Constants.NONE);
+				}
+
+			}
+		}
+	}
+
+	public void sendMessage(PC fromPC, PC toPC, int aKind)
+	{
+		this.view.setMessageKind(aKind);
+		this.view.addLineOfmessage(fromPC, toPC);
+	}
+
+
+	/**
+	 * デバッグ
+	 */
+	public void showKBucket(int srcID)
+	{
+		PC aPC = this.pcs[srcID]; //自身のオブジェクト
+		System.out.print(Constants.GREEN);
+		System.out.println("tableId=" + aPC.id);
+		System.out.print(Constants.BLACK);
+
+		for(Map.Entry<Integer,ArrayList<PC>> anEntry : aPC.kBuckets.entrySet()) {
+			int key = anEntry.getKey();
+			ArrayList<PC> values = anEntry.getValue();
+			System.out.print("k=" + key + ", v=");
+			for(PC value : values) { System.out.print(value.id + ","); }
+			System.out.println();
+		}
+		System.out.print(Constants.GREEN);
+		System.out.println("----");
+		System.out.print(Constants.BLACK);
+	}
+
+	public void showKBucketAll() {
+		for(int i=0; i<NODE_NUM; i++) {
+			if (this.pcs[i].isNIRF) {
+				this.showKBucket(i);
+			}
+		}
+	}
+
+
+
+	public void update() {
 		Point aPoint = this.view.getLocation();
 		Dimension aDimension = this.view.getSize();
-		this.view.paintImmediately(0,0, aDimension.width, aDimension.height); 
+		this.view.paintImmediately(0,0, aDimension.width, aDimension.height);
+	}
+
+	public void updateAndSleep(int d_time)
+	{
+		update();
+		try { Thread.sleep(Constants.SLEEP_TIME + d_time); }
+		catch(Exception e) { e.printStackTrace(); }
+	}
+
+	public void updateAndSleep()
+	{
+		this.updateAndSleep(0);
 	}
 }
