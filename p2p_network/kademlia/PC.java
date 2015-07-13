@@ -113,17 +113,17 @@ public class PC extends Node implements Runnable
 	/*
 	 * DHTにaPCのaKeyとlibnamesを登録する
 	 */
-	public void store(String aLibname, PC aPC)
+	public void store(String aLibname, PC fromPC, PC toPC)
 	{
-		if (this.dht.containsKey(aLibname)) {
-			ArrayList<PC> pcs = this.dht.get(aLibname);
-			pcs.add(aPC);
-			this.dht.put(aLibname, pcs);
+		if (toPC.dht.containsKey(aLibname)) {
+			ArrayList<PC> pcs = toPC.dht.get(aLibname); //前のリストを上書き
+			pcs.add(fromPC);
+			toPC.dht.put(aLibname, pcs);
 		}
 		else {
 			ArrayList<PC> pcs = new ArrayList<PC>();
-			pcs.add(aPC);
-			this.dht.put(aLibname, pcs);
+			pcs.add(fromPC);
+			toPC.dht.put(aLibname, pcs);
 		}
 	}
 
@@ -147,7 +147,7 @@ public class PC extends Node implements Runnable
 				this.model.sendMessage(fromPC, toPC, Constants.PING_MSG);
 				this.model.updateAndSleep();
 
-				//aPC.store(this, this.getKey(), this.libnames); //DHTを登録する
+				//this.store(fromPC.libnames, fromPC, toPC); //DHTを登録する
 				return toPC;
 			}
 		}
@@ -239,6 +239,7 @@ public class PC extends Node implements Runnable
 		if (toPC != null) {
 			//System.out.println(this.id + " -> " + toPC.id);
 			List<PC> pcK = this.findNode(fromPC, toPC);
+			//this.store(fromPC.libname, fromPC, toPC);
 			this.model.updateAndSleep();
 
 			//K個のノードを経路表に追加

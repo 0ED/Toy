@@ -27,7 +27,7 @@ public class RashController extends MouseAdapter
 		if (this.model.isStartMenu) {
 			if (this.model.startButtonRect.contains(anEvent.getPoint())) {
 				this.model.isStartMenu = false;
-				this.midiPlayer.stop();
+				this.midiPlayer.stopMidi();
 				this.view.repaint();
 				this.midiPlayer = new MidiPlayer(Constants.gameMusic);
 				this.midiPlayer.start();
@@ -101,7 +101,7 @@ public class RashController extends MouseAdapter
 				this.model.stageNumber = 0;
 				try { this.model.nextStage(); }
 				catch(IOException e) { }
-				this.midiPlayer.stop();
+				this.midiPlayer.stopMidi();
 				this.midiPlayer = new MidiPlayer(Constants.menuMusic);
 				this.midiPlayer.start();
 			}

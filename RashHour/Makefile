@@ -2,7 +2,7 @@ TARGET=Example
 SRCS=$(TARGET).java RashModel.java RashView.java RashController.java Constants.java
 
 all:
-	@javac $(TARGET).java Constants.java
+	javac *.java
 test: all
 	java $(TARGET)
 vim:
